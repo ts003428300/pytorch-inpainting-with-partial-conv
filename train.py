@@ -41,14 +41,14 @@ class InfiniteSampler(data.sampler.Sampler):
 
 parser = argparse.ArgumentParser()
 # training options
-parser.add_argument('--root', type=str, default='/srv/datasets/Places2')
-parser.add_argument('--mask_root', type=str, default='./masks')
+parser.add_argument('--root', type=str, default='./srv/datasets/Places2')
+parser.add_argument('--mask_root', type=str, default='./mask')
 parser.add_argument('--save_dir', type=str, default='./snapshots/default')
 parser.add_argument('--log_dir', type=str, default='./logs/default')
-parser.add_argument('--lr', type=float, default=2e-4)
-parser.add_argument('--lr_finetune', type=float, default=5e-5)
-parser.add_argument('--max_iter', type=int, default=1000000)
-parser.add_argument('--batch_size', type=int, default=16)
+parser.add_argument('--lr', type=float, default=2e-3)
+parser.add_argument('--lr_finetune', type=float, default=5e-4)
+parser.add_argument('--max_iter', type=int, default=15000)
+parser.add_argument('--batch_size', type=int, default=10)
 parser.add_argument('--n_threads', type=int, default=16)
 parser.add_argument('--save_model_interval', type=int, default=50000)
 parser.add_argument('--vis_interval', type=int, default=5000)
@@ -68,7 +68,7 @@ if not os.path.exists(args.save_dir):
 if not os.path.exists(args.log_dir):
     os.makedirs(args.log_dir)
 writer = SummaryWriter(log_dir=args.log_dir)
-
+print("############## TEST ##################")
 size = (args.image_size, args.image_size)
 img_tf = transforms.Compose(
     [transforms.Resize(size=size), transforms.ToTensor(),
@@ -76,14 +76,17 @@ img_tf = transforms.Compose(
 mask_tf = transforms.Compose(
     [transforms.Resize(size=size), transforms.ToTensor()])
 
+print("args.root",args.root)
+print("args.mask_root",args.mask_root)
+print("img_tf",img_tf)
+
 dataset_train = Places2(args.root, args.mask_root, img_tf, mask_tf, 'train')
 dataset_val = Places2(args.root, args.mask_root, img_tf, mask_tf, 'val')
-
-iterator_train = iter(data.DataLoader(
-    dataset_train, batch_size=args.batch_size,
-    sampler=InfiniteSampler(len(dataset_train)),
-    num_workers=args.n_threads))
-print(len(dataset_train))
+print("len(dataset_train)",len(dataset_train))
+print("InfiniteSampler(len(dataset_train))",type(InfiniteSampler(len(dataset_train))))
+iterator_train = iter(data.DataLoader(dataset_train, batch_size=args.batch_size,
+    sampler=InfiniteSampler(len(dataset_train)),num_workers=args.n_threads))
+print("iter",len(iterator_train))
 model = PConvUNet().to(device)
 
 if args.finetune:
@@ -105,8 +108,11 @@ if args.resume:
     print('Starting from iter ', start_iter)
 
 for i in tqdm(range(start_iter, args.max_iter)):
+    print(i)
     model.train()
 
+    print("device",device)
+    print("x", type(iterator_train))
     image, mask, gt = [x.to(device) for x in next(iterator_train)]
     output, _ = model(image, mask)
     loss_dict = criterion(image, mask, output, gt)

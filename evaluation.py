@@ -6,7 +6,9 @@ from util.image import unnormalize
 
 
 def evaluate(model, dataset, device, filename):
+    print("zip",type(zip(dataset)))
     image, mask, gt = zip(*[dataset[i] for i in range(8)])
+    #image, mask, gt = zip(*[dataset[0]])
     image = torch.stack(image)
     mask = torch.stack(mask)
     gt = torch.stack(gt)

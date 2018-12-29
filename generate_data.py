@@ -26,8 +26,8 @@ if __name__ == '__main__':
     import os
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--image_size', type=int, default=512)
-    parser.add_argument('--N', type=int, default=10000)
+    parser.add_argument('--image_size', type=int, default=256)
+    parser.add_argument('--N', type=int, default=100)
     parser.add_argument('--save_dir', type=str, default='mask')
     args = parser.parse_args()
 
